@@ -1,0 +1,165 @@
+
+#define EXAMPLE_PCNT_HIGH_LIMIT 100
+#define EXAMPLE_PCNT_LOW_LIMIT  -100
+
+//for ESP32_PWM library
+
+#define _PWM_LOGLEVEL_                0  //dont define greater than 0, for debugging only
+#define USING_MICROS_RESOLUTION       false    //true -- was default
+// Default is true, uncomment to false
+//#define CHANGING_PWM_END_OF_CYCLE     false
+// To be included only in main(), .ino with setup() to avoid `Multiple Definitions` Linker Error
+#define HW_TIMER_INTERVAL_US      20L
+
+//#include "ESP32_PWM.h"
+
+
+/////
+
+#include "esphome.h"
+#include <esp32_pcnt.h>
+
+#include <ESP32_FastPWM.h>
+
+// Init ESP32 timer 1
+//ESP32Timer ITimer(1);
+
+// Init ESP32_ISR_PWM
+//ESP32_PWM ISR_PWM;
+
+/*
+bool IRAM_ATTR TimerHandler(void * timerNo)
+{
+  ISR_PWM.run();
+
+  return true;
+}
+*/
+/////////////
+
+
+int PWM_resolution       = 7;
+
+//creates pwm instance
+ESP32_FAST_PWM* PWM_Instance;
+
+float frequency = 250000.0f;
+float dutyCycle = 100.0f;
+
+uint8_t channel = 0;
+
+class PSController : public Component, public CustomAPIDevice {
+ private:
+	uint32_t motorPWMPin    = 14;
+	//ESP32_PWM config
+	///uint32_t PWM_Pin    = 14;
+	///float PWM_Freq1   = 250000.0f; //in Hz
+	///float PWM_DutyCycle1  = 50.0;
+	// Channel number used to identify associated channel
+	///int channelNum;
+	///volatile uint32_t startMicros = 0;
+	volatile uint32_t timeoutMicros = 0;
+	bool startedPWM = false;
+	/*
+	// Init ESP32 timer1
+	ESP32Timer ITimer(1);
+	// Init ESP32_ISR_PWM
+	ESP32_PWM ISR_PWM;
+	bool IRAM_ATTR TimerHandler(void * timerNo)
+	{
+	  ISR_PWM.run();
+	  return true;
+	}
+	*/
+	/////
+ public:
+  void setup() override {
+    // This will be called once to set up the component
+    // think of it as the setup() call in Arduino
+    ///pinMode(6, OUTPUT);
+    //pinMode(14, OUTPUT);
+
+		  PWM_Instance = new ESP32_FAST_PWM(motorPWMPin, frequency, dutyCycle, channel, PWM_resolution);
+
+
+		// Interval in microsecs
+		/*
+  	if (ITimer.attachInterruptInterval(HW_TIMER_INTERVAL_US, TimerHandler)) {
+    	startMicros = micros();
+    	//ESP_LOGD("custom", "Starting ITimer OK, micros() = %d", startMicros);
+  	} else {
+    	//ESP_LOGD("custom", "Can't set ITimer. Select another freq. or timer");
+		}
+		*/
+    // Declare a service "hello_world"
+    //  - Service will be called "esphome.<NODE_NAME>_hello_world" in Home Assistant.
+    //  - The service has no arguments
+    //  - The function on_hello_world declared below will attached to the service.
+    register_service(&PSController::on_hello_world, "hello_world", {"name"});
+
+    // Declare a second service "start_washer_cycle"
+    //  - Service will be called "esphome.<NODE_NAME>_start_washer_cycle" in Home Assistant.
+    //  - The service has three arguments (type inferred from method definition):
+    //     - cycle_duration: integer
+    //     - silent: boolean
+    //     - string_argument: string
+    //  - The function start_washer_cycle declared below will attached to the service.
+    ///register_service(&PSController::on_start_washer_cycle, "start_washer_cycle",
+    ///                 {"cycle_duration", "silent", "string_argument"});
+
+    // Subscribe to a Home Assistant state "sensor.temperature"
+    //  - Each time the ESP connects or Home Assistant updates the state, the function
+    //    on_state_changed will be called
+    //  - The state is a string - if you want to use it as an int you must parse it manually
+    ///subscribe_homeassistant_state(&PSController::on_state_changed, "sensor.temperature");
+  }
+  void on_hello_world(std::string name) {
+    ESP_LOGD("custom", "Hello World! %s - freq = %f", name.c_str(), frequency);
+
+    if (is_connected()) {
+      // Example check to see if a client is connected
+    	ESP_LOGD("custom", "Hello World -- Client is connected.");
+    }
+  }
+  /*
+ 	void on_start_washer_cycle(int cycle_duration, bool silent, std::string string_argument) {
+    ESP_LOGD("custom", "Starting washer cycle!");
+    digitalWrite(8, HIGH);
+    // do something with arguments
+
+    // Call a homeassistant service
+    call_homeassistant_service("homeassistant.service");
+  }
+  void on_state_changed(std::string state) {
+    ESP_LOGD(TAG, "Temperature has changed to %s", state.c_str());
+  }
+	*/
+	void loop() override {
+		if(!startedPWM && (micros() > timeoutMicros + 3000000)) {
+			startedPWM = true;
+			timeoutMicros = micros();
+			dutyCycle = 100.0f;
+			//channelNum = ISR_PWM.setPWM(PWM_Pin, PWM_Freq1, PWM_DutyCycle1);
+  		//PWM_Instance->setPWM(motorPWMPin, frequency, dutyCycle);
+			PWM_Instance->setPWM_manual(motorPWMPin, dutyCycle);
+    	ESP_LOGD("custom", "Started PWM.");
+		} else {
+			if(micros() > timeoutMicros + 3000000) {
+  			//ISR_PWM.deleteChannel((uint8_t) channelNum);
+  			dutyCycle = 0.0f;
+  			//PWM_Instance->setPWM(motorPWMPin, frequency, dutyCycle);
+				PWM_Instance->setPWM_manual(motorPWMPin, dutyCycle);
+				timeoutMicros = micros();
+				startedPWM = false;	
+    		ESP_LOGD("custom", "Stopped PWM.");
+			}
+		}
+		
+	//	delay(10000);
+
+  //	ISR_PWM.deleteChannel((uint8_t) channelNum);
+
+	//	delay(2000);
+
+	}
+};

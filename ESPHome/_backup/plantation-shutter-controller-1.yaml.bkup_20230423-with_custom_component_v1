@@ -1,0 +1,70 @@
+esphome:
+  name: plantation-shutter-controller-1
+  friendly_name: Plantation Shutter Controller 1
+  includes:
+    - ps_controller.h
+  libraries:
+    - "ESP32PulseCounter"
+    - "ESP32_FastPWM"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "8pyTcO2dB4uwA33FvFH1QzwoLsv3zn+wV55qfPvAaFY="
+
+ota:
+  password: "d2c01dcc7cfc91cbf864dd3085ec8173"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Plantation-Shutter-Controller-1"
+    password: "2bf7vmY2ECm2"
+
+captive_portal:
+
+globals:
+  - id: motor_running
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+#  - id: cur_time
+#    type: int
+#    restore_value: no
+#    initial_value: '0'
+  - id: motor_run_start_time_seconds
+    type: float
+    restore_value: no
+    initial_value: '0'
+  #- id: motor_adc_voltage_zero_point
+  #  type: float
+  #  restore_value: no
+  #  initial_value: '0'
+
+#interval:
+#  - interval: 0.0001s
+#    then:
+#      - lambda: |-
+#          if( id(motor_running) && id(motor_pulse_counter_total).state >= id(one_rotation_counts).state) {
+#            id(motor_running) = false;
+#            id(drv_enable).turn_off();
+#          }
+
+custom_component:
+- lambda: |-
+    auto ps_controller_1 = new PSController();
+    App.register_component(ps_controller_1);
+    return {ps_controller_1};
+  components:
+  - id: ps_controller
