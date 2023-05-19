@@ -1,0 +1,13 @@
+For ESP32dev via ESPHome, these pins work for VSPI:
+	MOSI = 23
+	MISO = 19
+	CS = 5
+	CLK = 18
+
+SPI clock speed of 250khz works with the arduino slave demo. 
+
+
+
+
+
+
