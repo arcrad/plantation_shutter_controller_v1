@@ -1,5 +1,5 @@
 #define CUSTOM_SS_PIN 27
-#define LOOP_DELAY_MS 1000
+#define LOOP_DELAY_MS 500
 
 #include "esphome.h"
 #include "SPI.h"
@@ -10,7 +10,8 @@ class PSController : public Component {
  private:
 	//uint32_t motorPWMPin    = 14;
 	unsigned long lastMillisSpiTransfer = 0;
-	unint8_t byte_to_transfer = 0;
+	uint8_t byte_to_transfer = 1;
+	uint8_t byte_recieved = 0;
  public:
   void setup() override {
     // This will be called once to set up the component
@@ -92,7 +93,7 @@ if(millis() > lastMillisSpiTransfer + LOOP_DELAY_MS) {
 
  
   ESP_LOGD("custom", "do SPI transfer...");
-  ESP_LOGD("custom", "byte_to_transfer = %d", byte_to_transfer);
+  ESP_LOGD("custom", " >> byte_to_transfer = %d", byte_to_transfer);
 
 		//SPI.beginTransaction(SPISettings(14000000, MSBFIRST, SPI_MODE0));
 		//SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
@@ -103,6 +104,9 @@ if(millis() > lastMillisSpiTransfer + LOOP_DELAY_MS) {
 	// send test string
   //for (const char * p = "Hello, world!\n" ; c = *p; p++) {
     SPI.transfer(byte_to_transfer);
+    delay(1);
+    //byte_recieved = SPI.transfer(0);
+    byte_recieved = SPI.transfer(0);
     //SPI.write (c);
 	//}
 
@@ -115,9 +119,11 @@ if(millis() > lastMillisSpiTransfer + LOOP_DELAY_MS) {
 
 	SPI.endTransaction();
 
-	byte_to_transfer++;
-	if(byte_to_transfer > 255) {
-		byte_to_transfer = 0;
+  ESP_LOGD("custom", " << byte_recieved = %d", byte_recieved);
+	
+byte_to_transfer++;
+	if(byte_to_transfer > 50) {
+		byte_to_transfer = 1;
 	}
 
   lastMillisSpiTransfer = millis();
