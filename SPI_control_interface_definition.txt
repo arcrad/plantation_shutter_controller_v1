@@ -1,0 +1,173 @@
+single byte SPI control interface definition
+
+
+
+send one byte on MOSI:
+
+0 = nothing/NOOP (use to get SPI "return" value)
+---
+1 = do calibration routine 
+---
+2 = seek position 0%
+3 = seek position 10%
+4 = seek position 20%
+5 = seek position 30%
+6 = seek position 40%
+7 = seek position 50%
+8 = seek position 60%
+9 = seek position 70%
+10 = seek position 80%
+11 = seek position 90%
+12 = seek position 100%
+---
+13 = get current position
+14 = get last error code
+15 = get current state
+16 = get current seek target
+
+
+
+
+
+recieve one byte on MISO:
+
+0 = nothing/NOOP (use to get SPI "return" value)
+---
+1 = general error 
+2 = error type #1
+3 = error type #2
+4 = error type #3
+5 = error type #4
+6 = error type #5
+---
+7 = <<placeholder>>
+8 = <<placeholder>>
+9 = <<placeholder>>
+10 = <<placeholder>>
+---
+11 = current position is 0%
+12 = current position is 1%
+13 = current position is 2%
+14 = current position is 3%
+15 = current position is 4%
+16 = current position is 5%
+17 = current position is 6%
+18 = current position is 7%
+19 = current position is 8%
+20 = current position is 9%
+21 = current position is 10%
+22 = current position is 11%
+23 = current position is 12%
+24 = current position is 13%
+25 = current position is 14%
+26 = current position is 15%
+27 = current position is 16%
+28 = current position is 17%
+29 = current position is 18%
+30 = current position is 19%
+31 = current position is 20%
+32 = current position is 21%
+33 = current position is 22%
+34 = current position is 23%
+35 = current position is 24%
+36 = current position is 25%
+37 = current position is 26%
+38 = current position is 27%
+39 = current position is 28%
+40 = current position is 29%
+41 = current position is 30%
+42 = current position is 31%
+43 = current position is 32%
+44 = current position is 33%
+45 = current position is 34%
+46 = current position is 35%
+47 = current position is 36%
+48 = current position is 37%
+49 = current position is 38%
+50 = current position is 39%
+51 = current position is 40%
+52 = current position is 41%
+53 = current position is 42%
+54 = current position is 43%
+55 = current position is 44%
+56 = current position is 45%
+57 = current position is 46%
+58 = current position is 47%
+59 = current position is 48%
+60 = current position is 49%
+61 = current position is 50%
+62 = current position is 51%
+63 = current position is 52%
+64 = current position is 53%
+65 = current position is 54%
+66 = current position is 55%
+67 = current position is 56%
+68 = current position is 57%
+69 = current position is 58%
+70 = current position is 59%
+71 = current position is 60%
+72 = current position is 61%
+73 = current position is 62%
+74 = current position is 63%
+75 = current position is 64%
+76 = current position is 65%
+77 = current position is 66%
+78 = current position is 67%
+79 = current position is 68%
+80 = current position is 69%
+81 = current position is 70%
+82 = current position is 71%
+83 = current position is 72%
+84 = current position is 73%
+85 = current position is 74%
+86 = current position is 75%
+87 = current position is 76%
+88 = current position is 77%
+89 = current position is 78%
+90 = current position is 79%
+91 = current position is 80%
+92 = current position is 81%
+93 = current position is 82%
+94 = current position is 83%
+95 = current position is 84%
+96 = current position is 85%
+97 = current position is 86%
+98 = current position is 87%
+99 = current position is 88%
+100 = current position is 89%
+101 = current position is 90%
+102 = current position is 91%
+103 = current position is 92%
+104 = current position is 93%
+105 = current position is 94%
+106 = current position is 95%
+107 = current position is 96%
+108 = current position is 97%
+109 = current position is 98%
+110 = current position is 99%
+111 = current position is 100%
+---
+112 = state: idle
+113 = state: calibration: find forward stop
+114 = state: calibration: find backward stop 
+115 = state: seeking target
+116 = state: 
+117 = state: 
+118 = state: 
+119 = state: 
+120 = state: 
+121 = state: 
+122 = state: 
+123 = state: 
+---
+124 = current seek target is 0%
+125 = current seek target is 10%
+126 = current seek target is 20%
+127 = current seek target is 30%
+128 = current seek target is 40%
+129 = current seek target is 50%
+130 = current seek target is 60%
+131 = current seek target is 70%
+132 = current seek target is 80%
+133 = current seek target is 90%
+134 = current seek target is 100%
