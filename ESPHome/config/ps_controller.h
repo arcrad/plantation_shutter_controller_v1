@@ -1,4 +1,5 @@
 #define CUSTOM_SS_PIN 27
+#define LOOP_DELAY_MS 1000
 
 #include "esphome.h"
 #include "SPI.h"
@@ -9,7 +10,7 @@ class PSController : public Component {
  private:
 	//uint32_t motorPWMPin    = 14;
 	unsigned long lastMillisSpiTransfer = 0;
- 	bool pin_state = false;
+	unint8_t byte_to_transfer = 0;
  public:
   void setup() override {
     // This will be called once to set up the component
@@ -80,17 +81,18 @@ class PSController : public Component {
     ESP_LOGD("custom", "CUSTOM_SS = %d", CUSTOM_SS_PIN);
     ESP_LOGD("custom", "CLK = %d", SCK);
 		*/
-if(millis() > lastMillisSpiTransfer + 2000) {
+if(millis() > lastMillisSpiTransfer + LOOP_DELAY_MS) {
  char c;
 
-    ESP_LOGD("custom", "MOSI = %d", MOSI);
-    ESP_LOGD("custom", "MISO = %d", MISO);
-    ESP_LOGD("custom", "SS = %d", SS);
-    ESP_LOGD("custom", "CUSTOM_SS = %d", CUSTOM_SS_PIN);
-    ESP_LOGD("custom", "CLK = %d", SCK);
+//    ESP_LOGD("custom", "MOSI = %d", MOSI);
+//    ESP_LOGD("custom", "MISO = %d", MISO);
+//    ESP_LOGD("custom", "SS = %d", SS);
+//    ESP_LOGD("custom", "CUSTOM_SS = %d", CUSTOM_SS_PIN);
+//    ESP_LOGD("custom", "CLK = %d", SCK);
 
  
   ESP_LOGD("custom", "do SPI transfer...");
+  ESP_LOGD("custom", "byte_to_transfer = %d", byte_to_transfer);
 
 		//SPI.beginTransaction(SPISettings(14000000, MSBFIRST, SPI_MODE0));
 		//SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
@@ -99,10 +101,10 @@ if(millis() > lastMillisSpiTransfer + 2000) {
 // enable Slave Select
   digitalWrite(CUSTOM_SS_PIN, LOW);
 	// send test string
-  for (const char * p = "Hello, world!\n" ; c = *p; p++) {
-    SPI.transfer(c);
+  //for (const char * p = "Hello, world!\n" ; c = *p; p++) {
+    SPI.transfer(byte_to_transfer);
     //SPI.write (c);
-	}
+	//}
 
   // disable Slave Select
   digitalWrite(CUSTOM_SS_PIN, HIGH);
@@ -112,6 +114,12 @@ if(millis() > lastMillisSpiTransfer + 2000) {
 	//pin_state = !pin_state;
 
 	SPI.endTransaction();
+
+	byte_to_transfer++;
+	if(byte_to_transfer > 255) {
+		byte_to_transfer = 0;
+	}
+
   lastMillisSpiTransfer = millis();
 //	delay (2000);  // 1 seconds delay 
 } //millis() check 
