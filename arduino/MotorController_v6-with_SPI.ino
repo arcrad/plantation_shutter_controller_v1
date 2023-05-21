@@ -27,8 +27,8 @@ bool motorIsOn = false;
 bool motorDirection = false; //false = forward, true = backward
 long adjustedPWM = 0;
 bool motorIsStalled = false;
-bool doReHomeRoutine = false;
-bool completedHomeRoutine = false;
+bool doCalibrationRoutine = false;
+bool completedCalibrationRoutine = false;
 bool startedLastMoveCommand = false;
 bool startMotorSeek = false;
 
@@ -130,10 +130,33 @@ ISR(SPI_STC_vect) {
     //dummy byte/NOOP
   } else {
     lastSpiByteRecieved = SPDR;
-    /*spiByteToReturn = lastSpiByteRecieved+1;
-    if(spiByteToReturn > 255) {
-      spiByteToReturn = 0;
-    }*/
+    
+    if(lastSpiByteRecieved == 1) {
+        //Got "do calibration routine" command.
+       spiByteToReturn = 7;
+    } else if(lastSpiByteRecieved > 1 && lastSpiByteRecieved < 13) {
+        //Got "seek position" request
+        spiByteToReturn = 8;
+    } else if(lastSpiByteRecieved == 13) {
+        //Got request for current position
+        /////spiByteToReturn = current position
+    } else if(lastSpiByteRecieved == 14) {
+        //Got request for last error code
+        /////spiByteToReturn = current error code
+    } else if(lastSpiByteRecieved == 15) {
+        //Got request for current state
+        /////spiByteToReturn = current state
+    } else if(lastSpiByteRecieved == 16) {
+        //Got request for current seek target
+        /////spiByteToReturn = current seek target 
+    } else if(lastSpiByteRecieved == 17) {
+        //Got request for "is calibrated" status
+        /////spiByteToReturn = "is calibrated" status
+    } else {
+        //Got unknown command
+        spiByteToReturn = 2;
+    }
+
     SPDR = spiByteToReturn;
     gotNewSpiByte = true;
   }
@@ -199,80 +222,78 @@ void loop()
         Serial.println(receivedChars);
 
         if(lastSpiByteRecieved == 1) {
-            Serial.println("Got re-home command.");
+            Serial.println("Got do calibration routine command.");
             globalState = 1;
-            doReHomeRoutine = true;
-            completedHomeRoutine = false;
-            homingState = 0;
+            doCalibrationRoutine = true;
+            completedCalibrationRoutine = false;
         } else if(lastSpiByteRecieved == 12) {
             Serial.println("Got position request 100%.");
-            globalState = 2;
+            globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 1.0;
             startedLastMoveCommand = false;
         } else if(lastSpiByteRecieved == 2) {
             Serial.println("Got position request 0%.");
-            globalState = 2;
+            globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.0;
             startedLastMoveCommand = false;
         } else if(lastSpiByteRecieved == 3) {
             Serial.println("Got position request 10%.");
-            globalState = 2;
+            globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.1;
             startedLastMoveCommand = false;
         } else if(lastSpiByteRecieved == 4) {
             Serial.println("Got position request 20%.");
-            globalState = 2;
+            globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.2;
             startedLastMoveCommand = false;
         } else if(lastSpiByteRecieved == 5) {
             Serial.println("Got position request 30%.");
-            globalState = 2;
+            globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.3;
             startedLastMoveCommand = false;
         } else if(lastSpiByteRecieved == 6) {
             Serial.println("Got position request 40%.");
-            globalState = 2;
+            globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.4;
             startedLastMoveCommand = false;
         } else if(lastSpiByteRecieved == 7) {
             Serial.println("Got position request 50%.");
-            globalState = 2;
+            globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.5;
             startedLastMoveCommand = false;
         } else if(lastSpiByteRecieved == 8) {
             Serial.println("Got position request 60%.");
-            globalState = 2;
+            globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.6;
             startedLastMoveCommand = false;
         } else if(lastSpiByteRecieved == 9) {
             Serial.println("Got position request 70%.");
-            globalState = 2;
+            globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.7;
             startedLastMoveCommand = false;
         } else if(lastSpiByteRecieved == 10) {
             Serial.println("Got position request 80%.");
-            globalState = 2;
+            globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.8;
             startedLastMoveCommand = false;
         } else if(lastSpiByteRecieved == 11) {
             Serial.println("Got position request 90%.");
-            globalState = 2;
+            globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.9;
             startedLastMoveCommand = false;
         } else {
             Serial.println("Unknown command.");
-            spiByteToReturn = 2;
         }
         
         gotNewSpiByte = false;
@@ -292,7 +313,7 @@ void loop()
   //}
 
   //logging for serial plotter
-  if(millis() >= lastMillisPrint + 50) {
+  if(millis() >= lastMillisPrint + 2000) {
     lastMillisPrint = millis();
     Serial.print("Encoder_Count:");
     Serial.print(encoderCount);
@@ -396,14 +417,13 @@ void loop()
 
   encoderCount = motorEncoder.read();
 
-  if(globalState == 1) {
-    if(doReHomeRoutine) {
-      //Serial.println("Start re-home routine...");
-      switch(homingState) {
-        case 0:
+  if(globalState > 0 && globalState < 3) {
+    if(doCalibrationRoutine) {
+      //Serial.println("Start calibration routine...");
+      switch(globalState) {
+        case 1:
           //find forward stop (stall)
           //Serial.println("Finding forward stop...");
-          spiByteToReturn = 113;
           motorDirection = false;
           startMotorSeek = true;
           if(motorIsStalled) {
@@ -411,12 +431,11 @@ void loop()
             encoderCountForwardStop = encoderCount;
             encoderCountAtStop = encoderCount;
             motorIsStalled = false;
-            homingState = 1;
+            globalState = 2;
           }
           break;
-        case 1:
+        case 2:
           //find backward stop (stall)
-          spiByteToReturn = 114;
           motorDirection = true;
           startMotorSeek = true;
           //digitalWrite(phasePin, motorDirection);
@@ -426,8 +445,8 @@ void loop()
             encoderCountAtStop = encoderCount;
             motorIsStalled = false;
             //homingState = 2;
-            completedHomeRoutine = true;
-            doReHomeRoutine = false;
+            completedCalibrationRoutine = true;
+            doCalibrationRoutine = false;
           }
           break;
       }
@@ -449,38 +468,37 @@ void loop()
   
 
     //stop motor once target is reached
-        if(
-            completedHomeRoutine && 
-            motorIsOn 
-            && ( 
-              (motorDirection && encoderCount <= nextTargetPulses + abs(deltaPulsesBackwardMagnitude[nextAndPrevTargetPercentDelta-1]))
-              || (!motorDirection && encoderCount >= nextTargetPulses - abs(deltaPulsesForwardMagnitude[nextAndPrevTargetPercentDelta-1]))
-            )
-        ) {
-          motorIsOn = false;
-          analogWrite(pwmPin, 0);
-          lastMillisMotorStop = millis();
-          Serial.print("encoderCount (stop) =");
-          Serial.println(encoderCount);
-          //encoderCount = 0;
-          encoderCountAtStop = encoderCount;
-          Serial.print("encoderCount (zero?) =");
-          Serial.println(encoderCount);
-          if(completedHomeRoutine) {
-            completedDeltaCheck = false;
-          } else {
-            completedDeltaCheck = true;
-          }
-          lastEncoderCount = encoderCount;
-        }
-
+    if(
+        completedCalibrationRoutine && 
+        motorIsOn 
+        && ( 
+          (motorDirection && encoderCount <= nextTargetPulses + abs(deltaPulsesBackwardMagnitude[nextAndPrevTargetPercentDelta-1]))
+          || (!motorDirection && encoderCount >= nextTargetPulses - abs(deltaPulsesForwardMagnitude[nextAndPrevTargetPercentDelta-1]))
+        )
+    ) {
+      motorIsOn = false;
+      analogWrite(pwmPin, 0);
+      lastMillisMotorStop = millis();
+      Serial.print("encoderCount (stop) =");
+      Serial.println(encoderCount);
+      //encoderCount = 0;
+      encoderCountAtStop = encoderCount;
+      Serial.print("encoderCount (zero?) =");
+      Serial.println(encoderCount);
+      if(completedCalibrationRoutine) {
+        completedDeltaCheck = false;
+      } else {
+        completedDeltaCheck = true;
+      }
+      lastEncoderCount = encoderCount;
     }
+
+  }
 
   encoderCount = motorEncoder.read();
 
-  if(globalState == 2) {
-    if(completedHomeRoutine) {
-        spiByteToReturn = 115;
+  if(globalState == 3) {
+    if(completedCalibrationRoutine) {
         if(adjustedPWM < 0) {
           motorDirection = true; //backward
         } else {
