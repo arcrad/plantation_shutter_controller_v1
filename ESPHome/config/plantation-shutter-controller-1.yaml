@@ -1,12 +1,7 @@
 esphome:
   name: plantation-shutter-controller-1
   friendly_name: Plantation Shutter Controller 1
-  includes:
-    - ps_controller.h
-  libraries:
-    - SPI
-  #  - "ESP32PulseCounter"
-  #  - "ESP32_FastPWM"
+
 
 esp32:
   board: esp32dev
@@ -35,49 +30,63 @@ wifi:
 
 captive_portal:
 
-#spi:
-#  clk_pin: 18
-#  mosi_pin: 23
-#  miso_pin: 19
+external_components:
+  - source:
+      type: local
+      path: custom_components   
+    components: [ ps_motor_controller ]    
+#  - source:
+#      type: git
+#      url: https://github.com/ssieb/custom_components
+#    components: [ desky ]    
 
-globals:
-  - id: motor_running
-    type: bool
-    restore_value: no
-    initial_value: 'false'
-#  - id: cur_time
-#    type: int
-#    restore_value: no
-#    initial_value: '0'
-  - id: motor_run_start_time_seconds
-    type: float
-    restore_value: no
-    initial_value: '0'
-  #- id: motor_adc_voltage_zero_point
-  #  type: float
-  #  restore_value: no
-  #  initial_value: '0'
+spi:
+  clk_pin: GPIO18
+  miso_pin: GPIO19
+  mosi_pin: GPIO23
 
-#output:
-#  - platform: gpio
-#    id: custom_ss
-#    pin: 27
+ps_motor_controller:
+  id: motor_controller
+  cs_pin: GPIO27
 
-#interval:
-#  - interval: 0.0001s
-#    then:
-#      - lambda: |-
-#          if( id(motor_running) && id(motor_pulse_counter_total).state >= id(one_rotation_counts).state) {
-#            id(motor_running) = false;
-#            id(drv_enable).turn_off();
-#          }
+select:
+   - platform: template
+     name: "Cover State"
+     optimistic: true
+     options:
+       - 0%
+       - 50%
+       - 100%
+     initial_option: 50%
+     on_value:
+       then:
+           #- pulse_counter.set_total_pulses:
+           #    id: motor_pulse_counter
+           #    value: 0
+           - lambda: |-
+               id(motor_controller).do_calibration_routine();
 
-# in lambda for custom_component before return
-#    App.register_component(ps_controller_1);
+#uart:
+#  - id: desk_uart
+#    baud_rate: 9600
+#    rx_pin: 3
 
-custom_component:
-- lambda: |-
-    auto ps_controller_1 = new PSController();
-    return {ps_controller_1};
-  components:
-  - id: ps_controller
+#desky:
+#  #uart_id: desk_uart  (optional, unless multiple uarts are defined)
+#  id: my_desky
+#  height:  # optional sensor publishing the current height
+#    name: Desk Height
+#    # any other sensor options
+#  up:    # optional <pin> config
+#    number: 4
+#    inverted: true  # probably needed
+#  down:  # optional <pin> config
+#    number: 5
+#    inverted: true  # probably needed
+#  request:  # optional <pin> config to request height updates at boot
+#    number: 27
+#    inverted: true  # probably needed
+#  stopping_distance: 15  # optional distance from target to turn off moving, default 15
+#  timeout: 15s  # optional time limit for moving, default is none
+
+
