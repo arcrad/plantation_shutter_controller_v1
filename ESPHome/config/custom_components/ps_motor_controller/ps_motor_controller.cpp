@@ -118,7 +118,8 @@ void Desky::stop() {
 */
 
 void PSMotorControllerComponent::setup() {
-
+	this->byte_recieved = 0;
+	this->spi_setup();
 }
 
 void PSMotorControllerComponent::loop() {
@@ -126,7 +127,30 @@ void PSMotorControllerComponent::loop() {
 }
 
 void PSMotorControllerComponent::dump_config(){
-    ESP_LOGCONFIG(TAG, "Empty SPI component");
+	ESP_LOGCONFIG(TAG, "Empty SPI component");
+}
+
+
+void PSMotorControllerComponent::do_calibration_routine() {
+  if (api_is_connected()) {
+  	//ESP_LOGCONFIG(TAG, "Called do_calibration_routine()");
+  	ESP_LOGD(TAG, "Called do_calibration_routine()");
+  	//ESP_LOGD("custom", "Do calibration routine called");
+		/////SPI.beginTransaction(SPISettings(250000, MSBFIRST, SPI_MODE0));
+		//enable Slave Select
+  	/////digitalWrite(CUSTOM_SS_PIN, LOW);
+  	this->enable();
+    /////SPI.transfer(1);
+		this->write_byte(1);
+   	delay(1);
+   	/////byte_recieved = SPI.transfer(0);
+  	this->byte_recieved = this->read_byte();
+		//disable Slave Select
+  	/////digitalWrite(CUSTOM_SS_PIN, HIGH);
+  	this->disable();
+		/////SPI.endTransaction();
+  	ESP_LOGD(TAG, " << byte_recieved = %d", this->byte_recieved);
+   }
 }
 
 }  // namespace desky

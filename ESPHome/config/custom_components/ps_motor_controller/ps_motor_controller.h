@@ -1,6 +1,9 @@
 #pragma once
 
+//define CUSTOM_SS_PIN 27
+
 #include "esphome/core/component.h"
+#include "esphome/core/util.h" //investigate moving to .cpp file only
 /*
 -include "esphome/components/sensor/sensor.h"
 -include "esphome/components/uart/uart.h"
@@ -56,11 +59,16 @@ class Desky : public Component,  public sensor::Sensor, public uart::UARTDevice 
 
 class PSMotorControllerComponent : public Component, 
                     public spi::SPIDevice<spi::BIT_ORDER_MSB_FIRST,spi::CLOCK_POLARITY_LOW, 
-                            spi::CLOCK_PHASE_LEADING,spi::DATA_RATE_1KHZ> {
+                            spi::CLOCK_PHASE_LEADING,spi::DATA_RATE_200KHZ> {
   public:
     void setup() override;
     void loop() override;
     void dump_config() override;
+		
+  	void do_calibration_routine();
+	
+	protected:
+		uint8_t byte_recieved;
 };
 
 }  // namespace desky
