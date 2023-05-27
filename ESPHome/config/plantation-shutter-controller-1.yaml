@@ -15,6 +15,12 @@ logger:
 api:
   encryption:
     key: "8pyTcO2dB4uwA33FvFH1QzwoLsv3zn+wV55qfPvAaFY="
+  services:
+    - service: do_calibration_routine
+      then:
+        - lambda: |-
+            id(motor_controller).do_calibration_routine();
+
 
 ota:
   password: "d2c01dcc7cfc91cbf864dd3085ec8173"
@@ -54,17 +60,47 @@ select:
      name: "Cover State"
      optimistic: true
      options:
-       - 0%
-       - 50%
-       - 100%
-     initial_option: 50%
+       - "0%"
+       - "10%"
+       - "20%"
+       - "30%"
+       - "40%"
+       - "50%"
+       - "60%"
+       - "70%"
+       - "80%"
+       - "90%"
+       - "100%"
+     initial_option: "50%"
      on_value:
        then:
            #- pulse_counter.set_total_pulses:
            #    id: motor_pulse_counter
            #    value: 0
            - lambda: |-
-               id(motor_controller).do_calibration_routine();
+              if(x == "0%") {
+                id(motor_controller).seek_position(0);
+              } else if (x == "10%") {
+                id(motor_controller).seek_position(1);
+              } else if( x == "20%") {
+                id(motor_controller).seek_position(2);
+              } else if( x == "30%") {
+                id(motor_controller).seek_position(3);
+              } else if( x == "40%") {
+                id(motor_controller).seek_position(4);
+              } else if( x == "50%") {
+                id(motor_controller).seek_position(5);
+              } else if( x == "60%") {
+                id(motor_controller).seek_position(6);
+              } else if( x == "70%") {
+                id(motor_controller).seek_position(7);
+              } else if( x == "80%") {
+                id(motor_controller).seek_position(8);
+              } else if( x == "90%") {
+                id(motor_controller).seek_position(9);
+              } else if( x == "100%") {
+                id(motor_controller).seek_position(10);
+              }
 
 #uart:
 #  - id: desk_uart

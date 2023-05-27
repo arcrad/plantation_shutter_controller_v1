@@ -4,6 +4,8 @@
 
 #include "esphome/core/component.h"
 #include "esphome/core/util.h" //investigate moving to .cpp file only
+#include "esphome/components/api/custom_api_device.h"
+
 /*
 -include "esphome/components/sensor/sensor.h"
 -include "esphome/components/uart/uart.h"
@@ -66,8 +68,10 @@ class PSMotorControllerComponent : public Component,
     void dump_config() override;
 		
   	void do_calibration_routine();
+  	void seek_position(uint8_t position);
 	
 	protected:
+		void do_seek_position_spi_call(uint8_t psc_command);
 		uint8_t byte_recieved;
 };
 

@@ -4,10 +4,12 @@ import esphome.config_validation as cv
 #from esphome.components import uart
 #from esphome.components import sensor
 from esphome.components import spi
+#from esphome.components import api
 from esphome.const import CONF_ID, CONF_HEIGHT, CONF_TIMEOUT, ICON_GAUGE
 
 #DEPENDENCIES = ['uart']
 DEPENDENCIES = ['spi']
+#DEPENDENCIES = ['api']
 
 #AUTO_LOAD = ['sensor']
 

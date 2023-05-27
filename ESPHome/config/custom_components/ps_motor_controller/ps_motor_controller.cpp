@@ -120,6 +120,7 @@ void Desky::stop() {
 void PSMotorControllerComponent::setup() {
 	this->byte_recieved = 0;
 	this->spi_setup();
+	//register_service(&PSMotorControllerComponent::do_calibration_routine, "do_calibration_routine", {});
 }
 
 void PSMotorControllerComponent::loop() {
@@ -130,6 +131,62 @@ void PSMotorControllerComponent::dump_config(){
 	ESP_LOGCONFIG(TAG, "Empty SPI component");
 }
 
+//uint8_t doSeekPositionSpiCall(uint8_t psc_command) {
+void PSMotorControllerComponent::do_seek_position_spi_call(uint8_t psc_command) {
+  ESP_LOGD(TAG, "do_seek_position_spi_call() called");
+  this->enable();
+	this->write_byte(psc_command);
+  delay(1);
+  this->byte_recieved = this->read_byte();
+  this->disable();
+  ESP_LOGD(TAG, " << byte_recieved = %d", this->byte_recieved);
+	//return this->byte_recieved;
+}
+ 
+void PSMotorControllerComponent::seek_position(uint8_t position) {
+  ESP_LOGD(TAG, "seek_position() called");
+	if (!api_is_connected()) {
+  	ESP_LOGE(TAG, "API is not connected.");
+		return;
+	}
+	switch (position) {
+		case 0:
+			this->do_seek_position_spi_call(2);
+			break;
+		case 1:
+			this->do_seek_position_spi_call(3);
+			break;	
+		case 2:
+			this->do_seek_position_spi_call(4);
+			break;
+		case 3:
+			this->do_seek_position_spi_call(5);
+			break;
+		case 4:
+			this->do_seek_position_spi_call(6);
+			break;
+		case 5:
+			this->do_seek_position_spi_call(7);
+			break;
+		case 6:
+			this->do_seek_position_spi_call(8);
+			break;
+		case 7:
+			this->do_seek_position_spi_call(9);
+			break;
+		case 8:
+			this->do_seek_position_spi_call(10);
+			break;
+		case 9:
+			this->do_seek_position_spi_call(11);
+			break;
+		case 10:
+			this->do_seek_position_spi_call(12);
+			break;
+		default:
+  		ESP_LOGE(TAG, "Unknown seek position requested.");
+	}
+}
 
 void PSMotorControllerComponent::do_calibration_routine() {
   if (api_is_connected()) {
