@@ -66,6 +66,8 @@ int nextAndPrevTargetPercentDelta = 5;
 long nextTargetPulses = 0;
 const long maxPulsesPerRev = 1440;
 long deltaPulses = 0;
+uint8_t currentPositionPercent = 0;
+
 
 long deltaPulsesForwardMagnitude[] = {0,0,0,0,0,0,0,0,0,0};
 long deltaPulsesBackwardMagnitude[] = {0,0,0,0,0,0,0,0,0,0};
@@ -205,6 +207,9 @@ void loop()
     adjustedPWM = pidOutput;
   }
   
+  currentPositionPercent = static_cast<int>(abs( (encoderCount-encoderCountBackwardStop) / ((encoderCountBackwardStop-encoderCountForwardStop)*1.0) )*100.0);
+  //currentPositionPercent = ( (encoderCount-encoderCountBackwardStop) / (encoderCountBackwardStop-encoderCountForwardStop) );
+
   digitalWrite(phasePin, motorDirection);
 
   //myPID.run();
@@ -319,6 +324,12 @@ void loop()
     Serial.print(encoderCount);
     Serial.print(",Next_Target_Pulses:");
     Serial.print(nextTargetPulses);
+    Serial.print(" FS: ");
+    Serial.print(encoderCountForwardStop);
+    Serial.print(" BS: ");
+    Serial.print(encoderCountBackwardStop);
+    Serial.print(",Position_%:");
+    Serial.print(currentPositionPercent);
     /*Serial.print(",PID_Output:");
     Serial.print(pidOutput);
     Serial.print(",Adjusted_PID_Output:");
