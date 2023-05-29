@@ -131,6 +131,17 @@ void PSMotorControllerComponent::dump_config(){
 	ESP_LOGCONFIG(TAG, "Empty SPI component");
 }
 
+uint8_t PSMotorControllerComponent::get_current_position() {
+  ESP_LOGD(TAG, "seek_position() called");
+  this->enable();
+	this->write_byte(13);
+  delay(1);
+  this->byte_recieved = this->read_byte();
+  this->disable();
+  ESP_LOGD(TAG, " << byte_recieved = %d, current_position = %d", this->byte_recieved, this->byte_recieved-11);
+	return this->byte_recieved-11;
+}
+
 //uint8_t doSeekPositionSpiCall(uint8_t psc_command) {
 void PSMotorControllerComponent::do_seek_position_spi_call(uint8_t psc_command) {
   ESP_LOGD(TAG, "do_seek_position_spi_call() called");
