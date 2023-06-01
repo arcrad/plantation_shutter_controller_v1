@@ -11,9 +11,24 @@ hardware:
 +create new d-shaft pulley
 +create new case/base-plate 
 
+administrative:
++clean up YAML for esphome device
+	+ensure secret values are kept secret/scrubbed from repo
++clean up custom component coe
++clean up arduino code
++clean up git repo 
++make git repo public
++add instructions/readme/documentation to repo
+	+esphome setup
+	+arduino setup
+	+hardware description
+	+HA setup
+	+other important stuff
+
 long term/lofty:
-+intvestigate if possible to re-implement arduino side of code (motor managemant) directly on esp32/8266
++investigate if possible to re-implement arduino side of code (motor managemant) directly on esp32/8266
 	+how fast can interrupts be handled?
 	+can it keep track of motor position accurately?
-
++implement auto-calibration feature that finds PID values in-situ 
+	+possibly also allow custom PID values via SPI or directly from ESP if motor control is ported to ESP 
 
