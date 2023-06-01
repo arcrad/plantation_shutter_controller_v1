@@ -4,6 +4,7 @@ firmware:
 +make arduino turn off motor a few seconds after a do_seek command is completed (allow freewheeling in between seek attempts)
 +investigate issue where motor tries to seek "random" position after additional re calibration routine complete (possibly trying to seek old target value?)
 +consider implmenting esphome decide on esp8266 instead of esp32 (esp32 is overkill here as its basically just SPI bridge) 
++return error when position is requested and not currently calibrated (arduino)
 
 hardware:
 +figure out solution for battery power/charging 
