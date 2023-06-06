@@ -8,6 +8,8 @@
 #define MOTOR_PWM_MAX_VALUE 255
 #define MOTOR_PWM_MIN_VALUE 180
 
+#define MOTOR_SEEK_MAX_DURATION 5000
+
 #include <Encoder.h>
 #include <AutoPID.h>
 #include <SPI.h>
@@ -46,13 +48,14 @@ uint8_t globalState = 0;
 
 unsigned long lastMillisPrint = 0;
 unsigned long lastMillisMotorStart = 0;
+unsigned long lastMillisMotorSeekStart = 0;
 unsigned long lastMillisStallCheck = -1;
 unsigned long lastMillisMotorStop = -1;
-bool completedDeltaCheck = true;
+//bool completedDeltaCheck = true;
 
 long encoderCount = 0;
 long lastEncoderCount = 0;
-long encoderCountAtStop = 0;
+//long encoderCountAtStop = 0;
 long encoderCountForwardStop = 0;
 long encoderCountBackwardStop = 0;
 //long encoderCountMiddleStop = -100;
@@ -237,54 +240,63 @@ void loop()
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 1.0;
             startedLastMoveCommand = false;
+            lastMillisMotorSeekStart = millis();
         } else if(lastSpiByteRecieved == 2) {
             Serial.println("Got position request 0%.");
             globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.0;
             startedLastMoveCommand = false;
+            lastMillisMotorSeekStart = millis();
         } else if(lastSpiByteRecieved == 3) {
             Serial.println("Got position request 10%.");
             globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.1;
             startedLastMoveCommand = false;
+            lastMillisMotorSeekStart = millis();
         } else if(lastSpiByteRecieved == 4) {
             Serial.println("Got position request 20%.");
             globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.2;
             startedLastMoveCommand = false;
+            lastMillisMotorSeekStart = millis();
         } else if(lastSpiByteRecieved == 5) {
             Serial.println("Got position request 30%.");
             globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.3;
             startedLastMoveCommand = false;
+            lastMillisMotorSeekStart = millis();
         } else if(lastSpiByteRecieved == 6) {
             Serial.println("Got position request 40%.");
             globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.4;
             startedLastMoveCommand = false;
+            lastMillisMotorSeekStart = millis();
         } else if(lastSpiByteRecieved == 7) {
             Serial.println("Got position request 50%.");
             globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.5;
             startedLastMoveCommand = false;
+            lastMillisMotorSeekStart = millis();
         } else if(lastSpiByteRecieved == 8) {
             Serial.println("Got position request 60%.");
             globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.6;
             startedLastMoveCommand = false;
+            lastMillisMotorSeekStart = millis();
         } else if(lastSpiByteRecieved == 9) {
             Serial.println("Got position request 70%.");
             globalState = 3;
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.7;
             startedLastMoveCommand = false;
+            lastMillisMotorSeekStart = millis();
         } else if(lastSpiByteRecieved == 10) {
             Serial.println("Got position request 80%.");
             globalState = 3;
@@ -297,6 +309,7 @@ void loop()
             prevTargetPercent = nextTargetPercent;
             nextTargetPercent = 0.9;
             startedLastMoveCommand = false;
+            lastMillisMotorSeekStart = millis();
         } else {
             Serial.println("Unknown command.");
         }
@@ -440,7 +453,7 @@ void loop()
           if(motorIsStalled) {
             Serial.println("Found forward stop.");
             encoderCountForwardStop = encoderCount;
-            encoderCountAtStop = encoderCount;
+            //encoderCountAtStop = encoderCount;
             motorIsStalled = false;
             globalState = 2;
           }
@@ -453,7 +466,7 @@ void loop()
           if(motorIsStalled) {
             Serial.println("Found backward stop.");
             encoderCountBackwardStop = encoderCount;
-            encoderCountAtStop = encoderCount;
+            //encoderCountAtStop = encoderCount;
             motorIsStalled = false;
             //homingState = 2;
             completedCalibrationRoutine = true;
@@ -493,14 +506,14 @@ void loop()
       Serial.print("encoderCount (stop) =");
       Serial.println(encoderCount);
       //encoderCount = 0;
-      encoderCountAtStop = encoderCount;
+      //encoderCountAtStop = encoderCount;
       Serial.print("encoderCount (zero?) =");
       Serial.println(encoderCount);
-      if(completedCalibrationRoutine) {
+      /*if(completedCalibrationRoutine) {
         completedDeltaCheck = false;
       } else {
         completedDeltaCheck = true;
-      }
+      }*/
       lastEncoderCount = encoderCount;
     }
 
@@ -510,6 +523,7 @@ void loop()
 
   if(globalState == 3) {
     if(completedCalibrationRoutine) {
+      if(millis() <= lastMillisMotorSeekStart + MOTOR_SEEK_MAX_DURATION) { //only seek for x seconds maximum per seek attempt
         if(adjustedPWM < 0) {
           motorDirection = true; //backward
         } else {
@@ -518,6 +532,7 @@ void loop()
         nextTargetPulses = encoderCountBackwardStop + ((encoderCountForwardStop - encoderCountBackwardStop) * nextTargetPercent);
         myPID.run();
         analogWrite(pwmPin, abs(adjustedPWM));
+      }
     }
   }
 
