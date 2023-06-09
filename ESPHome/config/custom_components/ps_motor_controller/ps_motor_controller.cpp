@@ -132,7 +132,7 @@ void PSMotorControllerComponent::dump_config(){
 }
 
 uint8_t PSMotorControllerComponent::get_current_position() {
-  ESP_LOGD(TAG, "seek_position() called");
+  ESP_LOGD(TAG, "get_current_position() called");
   this->enable();
 	this->write_byte(13);
   delay(1);
