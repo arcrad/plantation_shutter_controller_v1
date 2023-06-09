@@ -1,5 +1,6 @@
 firmware:
 +investigate issue where arduino reports "false" current position readings after a long time active or possibly after doing multiple re-calibration routines 
+	--20230608: issue seems to present after some time connected even without a re-calibration (offset appears to be about 40%)
 +add additional error state reporting from arduino
 +make arduino turn off motor a few seconds after a do_seek command is completed (allow freewheeling in between seek attempts)
 +investigate issue where motor tries to seek "random" position after additional re calibration routine complete (possibly trying to seek old target value?)
