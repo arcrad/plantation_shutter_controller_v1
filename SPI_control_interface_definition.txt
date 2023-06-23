@@ -24,6 +24,12 @@ send one byte on MOSI:
 14 = get last error code
 15 = get current state
 16 = get current seek target
+17 = get "has calibrated?" status
+---
+18 = set "forward stop" to current encoder value
+19 = set "backward stop" to current encoder value
+20 = set "is calibrated" to true
+21 = set "is calibrated" to false
 
 
 
@@ -34,16 +40,16 @@ recieve one byte on MISO:
 0 = nothing/NOOP (use to get SPI "return" value)
 ---
 1 = general error 
-2 = error type #1
-3 = error type #2
+2 = error type #1 ( unkown command )
+3 = error type #2 ( motor stalled during seek )
 4 = error type #3
 5 = error type #4
 6 = error type #5
 ---
-7 = <<placeholder>>
-8 = <<placeholder>>
-9 = <<placeholder>>
-10 = <<placeholder>>
+7 = Accepted "start calibration routine" command
+8 = Accepted "seek position" command 
+9 = Accepted "set forward stop" command
+10 = Accepted "set backward stop" command
 ---
 11 = current position is 0%
 12 = current position is 1%
@@ -171,3 +177,7 @@ recieve one byte on MISO:
 132 = current seek target is 80%
 133 = current seek target is 90%
 134 = current seek target is 100%
+---
+135 = "has_calibrated" = TRUE
+136 = "has_calibrated" = FALSE
+
