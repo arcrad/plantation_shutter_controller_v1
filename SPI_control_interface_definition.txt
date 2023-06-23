@@ -180,4 +180,6 @@ recieve one byte on MISO:
 ---
 135 = "has_calibrated" = TRUE
 136 = "has_calibrated" = FALSE
-
+---
+137 = Accepted 'set "is calibrated" to true' command
+138 = Accepted 'set "is calibrated" to false' command
