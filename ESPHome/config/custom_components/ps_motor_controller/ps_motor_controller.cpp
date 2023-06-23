@@ -199,6 +199,48 @@ void PSMotorControllerComponent::seek_position(uint8_t position) {
 	}
 }
 
+void PSMotorControllerComponent::set_forward_stop() {
+  ESP_LOGD(TAG, "set_forward_stop() called");
+	if (!api_is_connected()) {
+  	ESP_LOGE(TAG, "API is not connected.");
+		return;
+	}
+  this->enable();
+	this->write_byte(18);
+  delay(1);
+  this->byte_recieved = this->read_byte();
+  this->disable();
+  ESP_LOGD(TAG, " << byte_recieved = %d", this->byte_recieved);
+}
+
+void PSMotorControllerComponent::set_backward_stop() {
+  ESP_LOGD(TAG, "set_backward_stop() called");
+	if (!api_is_connected()) {
+  	ESP_LOGE(TAG, "API is not connected.");
+		return;
+	}
+  this->enable();
+	this->write_byte(19);
+  delay(1);
+  this->byte_recieved = this->read_byte();
+  this->disable();
+  ESP_LOGD(TAG, " << byte_recieved = %d", this->byte_recieved);
+}
+
+void PSMotorControllerComponent::set_calibration_status(bool cal_status) {
+  ESP_LOGD(TAG, "set_calibration_status() called with value of %d", cal_status ? 1 : 0);
+	if (!api_is_connected()) {
+  	ESP_LOGE(TAG, "API is not connected.");
+		return;
+	}
+  this->enable();
+	this->write_byte(cal_status ? 20 : 21);
+  delay(1);
+  this->byte_recieved = this->read_byte();
+  this->disable();
+  ESP_LOGD(TAG, " << byte_recieved = %d", this->byte_recieved);
+}
+
 void PSMotorControllerComponent::do_calibration_routine() {
   if (api_is_connected()) {
   	//ESP_LOGCONFIG(TAG, "Called do_calibration_routine()");

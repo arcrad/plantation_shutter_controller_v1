@@ -69,6 +69,9 @@ class PSMotorControllerComponent : public Component,
 		
   	void do_calibration_routine();
   	void seek_position(uint8_t position);
+  	void set_forward_stop();
+  	void set_backward_stop();
+  	void set_calibration_status(bool cal_status);
 		uint8_t get_current_position();
 	
 	protected:
